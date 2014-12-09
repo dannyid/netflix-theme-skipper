@@ -1,16 +1,16 @@
-(function() {
   var checkForNetflixInterval = setInterval(isNetflix, 500);
 
   function isNetflix() {
-    if (typeof netflix === undefined) {
+    if (typeof netflix === "undefined") {
       console.log("Netflix not found. Trying again.")
     } else {
       clearInterval(checkForNetflixInterval)
-      init();
+      init(netflix);
+      return;
     }
   };
 
-  function init() {
+  function init(netflix) {
     var data = {
       "70177868": {
         start: 217167,
@@ -36,6 +36,5 @@
       };
     };
 
-    var interval = setInterval("checkTime(player, episodeId)",500);
+    var interval = setInterval(function() {checkTime(player, episodeId)},500);
   };
-})();
