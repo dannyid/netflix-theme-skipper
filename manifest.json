@@ -1,0 +1,32 @@
+{
+  "manifest_version": 2,
+  "name": "Netflix Theme Skipper",
+  "description": "Automatically fast-forwards through opening credits on Netflix",
+  "version": "0.1.0",
+
+  "background": {
+      "scripts": []
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["http://www.netflix.com/WiPlayer*","https://www.netflix.com/WiPlayer*"],
+      "js": ["script.js"]
+    }
+  ],
+
+  "icons": {
+      "128": "./netflix-shut-up.png"
+  },
+
+  "web_accessible_resources": [
+  ],
+
+  "permissions": [
+      "tabs",
+      "http://www.netflix.com/WiPlayer*",
+      "https://www.netflix.com/WiPlayer*"
+  ],
+ 
+  "content_security_policy": "script-src 'self'; object-src 'self'"
+}
