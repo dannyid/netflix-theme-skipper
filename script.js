@@ -37,7 +37,7 @@
       end: 61
     },
     "70177873": {
-      start: 42,
+      start: 41.3, //165513
       end: 67
     },
     "70177874": {
@@ -105,16 +105,15 @@
   var intervalCheckTime = setInterval(checkTime, 500);
 
   function checkTime() {
-    var c =           4004; // For some reason Netflix will only seek() to time intervals that are multiples of 4004 (shrug)
     var player =      netflix.cadmium.objects.videoPlayer();
     var currentTime = player.getCurrentTime();
 
     var showName =    netflix.cadmium.metadata.getMetadata().video.title;
     var seasonNum =   netflix.cadmium.metadata.getActiveSeason().title.slice(7);
-    var episodeNum =  netflix.cadmium.metadata.getActiveVideo().seq;
     var episodeName = netflix.cadmium.metadata.getActiveVideo().title;
+    var episodeNum =  netflix.cadmium.metadata.getActiveVideo().seq;
     var themeStart =  data[netflix.cadmium.metadata.getActiveVideo().episodeId].start * 4004;
-    var themeEnd =    data[netflix.cadmium.metadata.getActiveVideo().episodeId].end * 4004;
+    var themeEnd =    data[netflix.cadmium.metadata.getActiveVideo().episodeId].end * 4004; // Netflix will only seek() to multiples of 4004 (shrug)
 
     var formattedTitle = showName+" - s"+seasonNum+"e"+episodeNum+" - "+episodeName;
 
