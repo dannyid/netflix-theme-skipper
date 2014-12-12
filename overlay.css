@@ -1,0 +1,8 @@
+div#nfs-overlay {
+  position: fixed,
+  top: 0px,
+ : right: 20px,
+  height: 50px,
+  width: 50px,
+  background-color: white,
+}
