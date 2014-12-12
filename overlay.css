@@ -1,8 +1,42 @@
-div#nfs-overlay {
+div#nts-overlay {
   position: fixed;
   top: 0px;
-  right: 20px;
-  height: 50px;
-  width: 50px;
-  background-color: white
+  right: 16px;
+  height: 56px;
+  width: 36px;
+  background-color: white;
+  opacity: 0.6;
+  z-index: 100000000000;
+  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 4px;
+  box-shadow: rgba(255, 255, 255, 0.6) 0px 1px 2px, rgba(255, 255, 255, 0.6) 1px 0px 3px;
+}
+
+div#nts-mini-overlay {
+  position: absolute;
+  font-family: "Arial", sans-serif;
+  font-size: 26px;
+  font-weight: 600;
+  top: 20px;
+  padding-left: 9px;
+  padding-top: 4px;
+  color: #999;
+}
+
+div#nts-mini-close {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  bottom: 0px;
+  width: 36px;
+  height: 20px;
+  border-bottom: 1px solid rgb(204, 204, 204);  
+}
+
+div#nts-mini-close::before {
+  content: "\2715";
+  color: #999;
+  font-size: 12px;
+  font-family: "Arial", sans-serif;
+  padding-left: 13px;
 }
