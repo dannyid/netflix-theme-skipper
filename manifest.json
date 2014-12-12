@@ -20,7 +20,8 @@
   },
 
   "web_accessible_resources": [
-    "script.js"
+    "script.js",
+    "overlay.js"
   ],
 
   "permissions": [
