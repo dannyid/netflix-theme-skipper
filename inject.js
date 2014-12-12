@@ -1,14 +1,14 @@
-var themeSkipperScript = document.createElement('script');
+var theme/kipperScript = document.createElement('script');
 themeSkipperScript.src = chrome.extension.getURL('script.js');
 themeSkipperScript.onload = function() {
     this.parentNode.removeChild(this);
 };
 (document.head||document.documentElement).appendChild(themeSkipperScript);
 
-var overlay = document.createElement('script');
-overlay.src = chrome.extension.getURL('overlay.js');
-overlay.onload = function() {
+var overlayScript = document.createElement('script');
+overlayScript.src = chrome.extension.getURL('overlay.js');
+overlayScript.onload = function() {
     this.parentNode.removeChild(this);
 };
-(document.head||document.documentElement).appendChild(overlay);
+(document.head||document.documentElement).appendChild(overlayScript);
 
