@@ -57,7 +57,7 @@
       end: 105
     },
     "70177878": { // 15
-      start: 46,
+      start: 45.6,
       end: 71
     },
     "70177879": { // 16
@@ -107,6 +107,8 @@
   function checkTime() {
     var player =      netflix.cadmium.objects.videoPlayer();
     var currentTime = player.getCurrentTime();
+    var isFullscreen = netflix.cadmium.fullscreen.isFullscreen()
+    var $overlay = $jq('div#nts-overlay');
 
     var showName =    netflix.cadmium.metadata.getMetadata().video.title;
     var seasonNum =   netflix.cadmium.metadata.getActiveSeason().title.slice(7);
@@ -126,6 +128,12 @@
     } else if (currentTime >= themeStart && currentTime < themeEnd) {
       player.seek(themeEnd);
       console.log("Taken to theme end.");
+    };
+
+    if (isFullscreen && $overlay.is(':visible')) {
+      $overlay.fadeOut();
+    } else if (!isFullscreen && !$overlay.is(':visible')) {
+      $overlay.fadeIn();
     };
   };
 })();
