@@ -12,3 +12,11 @@ overlayScript.onload = function() {
 };
 (document.head||document.documentElement).appendChild(overlayScript);
 
+var overlayCss = document.createElement('link');
+overlayCss.rel = "stylesheet";
+overlayCss.type = "text/css"
+overlayCss.href = chrome.extension.getURL('overlay.css');
+overlayCss.onload = function() {
+    this.parentNode.removeChild(this);
+};
+(document.head).appendChild(overlayCss);
