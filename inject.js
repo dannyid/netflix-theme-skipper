@@ -1,4 +1,4 @@
-var theme/kipperScript = document.createElement('script');
+var themeSkipperScript = document.createElement('script');
 themeSkipperScript.src = chrome.extension.getURL('script.js');
 themeSkipperScript.onload = function() {
     this.parentNode.removeChild(this);
