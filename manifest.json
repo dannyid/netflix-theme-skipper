@@ -22,7 +22,7 @@
   "web_accessible_resources": [
     "jquery-2.1.1.min.js",
     "script.js",
-    "overlay.js"
+    "overlay.js",
     "overlay.css"
   ],
 
