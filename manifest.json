@@ -11,20 +11,20 @@
   "content_scripts": [
     {
       "matches": ["http://www.netflix.com/WiPlayer*","https://www.netflix.com/WiPlayer*"],
-      "js": ["inject.js"],
-      "css": ["overlay.css"]
+      "js": ["js/inject.js"],
+      "css": ["css/overlay.css"]
     }
   ],
 
   "icons": {
-      "128": "./netflix-shut-up.png"
+      "128": "img/netflix-shut-up.png"
   },
 
   "web_accessible_resources": [
-    "jquery-2.1.1.min.js",
-    "script.js",
-    "overlay.js",
-    "overlay.css"
+    "js/jquery-2.1.1.min.js",
+    "js/script.js",
+    "js/overlay.js",
+    "css/overlay.css"
   ],
 
   "permissions": [
