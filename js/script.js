@@ -1,8 +1,7 @@
 (function(){
   var $ = jQuery
     , n = netflix.cadmium
-    , player = n.objects.videoPlayer()
-    , lastEpisodeId = 0
+    , lastEpisodeInfo = {episodeId: 0}
     , overlay
     , db = {
     "70177863": { // 1
@@ -108,21 +107,21 @@
   };
   
   var intervalCheckAllTheThings = setInterval(checkAllTheThings, 500);
-  var intervalCheckIfUiLoaded = setInterval(checkIfUiLoaded, 500);
+  var intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
 
   function checkAllTheThings() {
     var v = getVideoData();
 
     if (currentlyInTheme(v) === true) {
-      player.seek(v.themeEnd);
+      v.player.seek(v.themeEnd);
     };
 
-    if (v.episodeId === lastEpisodeId) {
+    if (v.episodeId === lastEpisodeInfo.episodeId) {
       // chill the fuck out
     } else {
-      lastEpisodeId = v.episodeId;
-      console.log(lastEpisodeId);
-      intervalCheckIfUiLoaded = setInterval(checkIfUiLoaded, 500);
+      lastEpisodeInfo.episodeId = v.episodeId;
+      console.log(lastEpisodeInfo.episodeId);
+      intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
     };
 
   };
@@ -131,7 +130,8 @@
     var activeVideo = n.metadata.getActiveVideo();
 
     return {
-      showName:       n.metadata.getMetadata().video.title
+      player:         n.objects.videoPlayer()
+    , showName:       n.metadata.getMetadata().video.title
     , seasonNum:      n.metadata.getActiveSeason().title.slice(7)
     , episodeName:    activeVideo.title
     , episodeNum:     activeVideo.seq
@@ -159,11 +159,11 @@
   };
 
 
-  function checkIfUiLoaded() {
-    var nextButton = $('div.player-control-button.player-next-episode')
+  function checkIfPlayerLoaded() {
+    var nextButton = $('div.player-next-episode')
     if (typeof nextButton[0] !== "undefined" && isOverlayPresent() === false) {
       injectOverlay(nextButton);
-      clearInterval(intervalCheckIfUiLoaded);
+      clearInterval(intervalCheckIfPlayerLoaded);
     };  
   };
 
@@ -171,7 +171,7 @@
     overlay = $('<div id="nts-mini-overlay"><span>N</span></div>') ;
     nextButton.before(overlay);
     overlay.click(function() {
-      console.log(o);
+      console.log(overlay);
     });
   };
 
