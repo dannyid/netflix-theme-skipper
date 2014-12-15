@@ -1,7 +1,7 @@
 (function(){
   var $ = jQuery
     , n = netflix.cadmium
-    , lastEpisodeInfo = {episodeId: 0}
+    , currentEpisodeInfo = {episodeId: 0}
     , overlay
     , db = {
     "70177863": { // 1
@@ -116,11 +116,11 @@
       v.player.seek(v.themeEnd);
     };
 
-    if (v.episodeId === lastEpisodeInfo.episodeId) {
+    if (v.episodeId === currentEpisodeInfo.episodeId) {
       // chill the fuck out
     } else {
-      lastEpisodeInfo.episodeId = v.episodeId;
-      console.log(lastEpisodeInfo.episodeId);
+      currentEpisodeInfo.episodeId = v.episodeId;
+      console.log(currentEpisodeInfo.episodeId);
       intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
     };
 
