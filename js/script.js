@@ -1,7 +1,7 @@
 (function(){
   var $ = jQuery
     , n = netflix.cadmium
-    , currentEpisodeInfo = {episodeId: 0}
+    , currentEpisodeInfo = {episodeId: '0', themeStart: 9999999999999, themeEnd: 9999999999999}
     , overlay
     , db = {
     "70177863": { // 1
@@ -113,17 +113,16 @@
     var v = getVideoData();
 
     if (currentlyInTheme(v) === true) {
-      v.player.seek(v.themeEnd);
+      v.player.seek(currentEpisodeInfo.themeEnd * 4004);
     };
 
-    if (v.episodeId === currentEpisodeInfo.episodeId) {
+    if (v.episodeId.toString() === currentEpisodeInfo.episodeId) {
       // chill the fuck out
     } else {
-      currentEpisodeInfo.episodeId = v.episodeId;
-      console.log(currentEpisodeInfo.episodeId);
+      currentEpisodeInfo.episodeId = v.episodeId.toString();
+      getThemeTimes(currentEpisodeInfo.episodeId);
       intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
     };
-
   };
 
   function getVideoData() {
@@ -135,24 +134,37 @@
     , seasonNum:      n.metadata.getActiveSeason().title.slice(7)
     , episodeName:    activeVideo.title
     , episodeNum:     activeVideo.seq
-    , episodeId:      activeVideo.episodeId
-    , themeStart:     db[activeVideo.episodeId].start
-    , themeEnd:       db[activeVideo.episodeId].end * 4004 // Netflix will only seek() to multiples of 4004 (shrug)
+    , episodeId:      activeVideo.episodeId.toString()
     , isFullscreen:   n.fullscreen.isFullscreen()
     , currentTime:    n.objects.videoPlayer().getCurrentTime() 
     }
   };
 
+  function getThemeTimes(episodeId) {
+    $.ajax({ 
+      url: "http://localhost:3000/"+episodeId
+    })
+    .done(function(res) {
+      console.log(res[0]);
+      currentEpisodeInfo.themeStart = res[0].themeStart;
+      currentEpisodeInfo.themeEnd = res[0].themeEnd;
+      console.log(currentEpisodeInfo);
+    })
+    .error(function() {
+      console.log("there was an error with the ajax");
+    })
+  };
+
   function currentlyInTheme(v) {
-    if (v.currentTime > v.themeEnd) {
+    if (v.currentTime > currentEpisodeInfo.themeEnd * 4004) {
       console.log("Theme has ended. Watching happyily again."); 
       return false;
     } 
-    else if (v.currentTime < v.themeStart) {
+    else if (v.currentTime < currentEpisodeInfo.themeStart) {
       console.log("Theme hasn't started yet.");  
       return false;
     } 
-    else if (v.currentTime >= v.themeStart && v.currentTime < v.themeEnd) {
+    else if (v.currentTime >= currentEpisodeInfo.themeStart && v.currentTime < currentEpisodeInfo.themeEnd * 4004) {
       console.log("Taken to theme end.");
       return true;
     };
