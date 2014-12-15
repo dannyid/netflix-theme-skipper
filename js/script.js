@@ -3,7 +3,7 @@
     , n = netflix.cadmium
     , player = n.objects.videoPlayer()
     , lastEpisodeId = 0
-    , o
+    , overlay
     , db = {
     "70177863": { // 1
       start: 0,
@@ -147,10 +147,12 @@
     if (v.currentTime > v.themeEnd) {
       console.log("Theme has ended. Watching happyily again."); 
       return false;
-    } else if (v.currentTime < v.themeStart) {
+    } 
+    else if (v.currentTime < v.themeStart) {
       console.log("Theme hasn't started yet.");  
       return false;
-    } else if (v.currentTime >= v.themeStart && v.currentTime < v.themeEnd) {
+    } 
+    else if (v.currentTime >= v.themeStart && v.currentTime < v.themeEnd) {
       console.log("Taken to theme end.");
       return true;
     };
@@ -166,9 +168,9 @@
   };
 
   function injectOverlay(nextButton) {
-    o = $('<div id="nts-mini-overlay"><span>N</span></div>') ;
-    nextButton.before(o);
-    o.click(function() {
+    overlay = $('<div id="nts-mini-overlay"><span>N</span></div>') ;
+    nextButton.before(overlay);
+    overlay.click(function() {
       console.log(o);
     });
   };
@@ -178,7 +180,8 @@
 
     if (overlay.length === 0) {
       return false;
-    } else if (overlay.length > 0) {
+    } 
+    else if (overlay.length > 0) {
       return true;
     };  
   };
