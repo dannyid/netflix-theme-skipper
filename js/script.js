@@ -78,7 +78,22 @@
   };
 
   function injectOverlay(nextButton) {
-    overlay = $('<div id="nts-mini-overlay"><span>N</span></div>') ;
+    overlay = $('<div id="nts-mini-overlay">'+
+                  '<span>N</span>'+
+/*                  '<div class="player-menu nts-submit-popup">'+
+                    '<h1>Hood Shit</h1>'+
+                    '<div class="player-next-episode-info">'+
+                      '<div class="image-container">'+
+                        '<img class="next-episode-image" src="http://so0.akam.nflximg.com/soa1/106/1742156106.jpg" style="margin-left: 0px;">'+
+                        '<div class="play-icon"></div>'+
+                      '</div>'+
+                      '<div class="player-next-episode-description">'+
+                        '<h2>Ep. 19 Heart of Glory</h2>'+
+                        '<p>Worf must choose between his loyalty to Starfleet and his Klingon heritage when two Klingon fugitives take over the Enterprise.</p>'+
+                      '</div>'+
+                    '</div>'+
+                  '</div>'+
+*/                '</div>') ;
     nextButton.before(overlay);
     overlay.click(function() {
       console.log(overlay);

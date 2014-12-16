@@ -18,6 +18,11 @@ div#nts-mini-overlay {
   background-color: transparent;
 }
 
+div#nts-mini-overlay::after {
+  border-right: 1px solid #151515;
+  content: "";
+}
+
 div#nts-mini-overlay span {
   position: relative;
   font-size: 3.6em;
@@ -34,14 +39,56 @@ div#nts-mini-overlay span:hover {
   color: #CF2325;
 }
 
-div#nts-mini-overlay::after {
-  border-right: 1px solid #151515;
-  content: "";
-}
-
-.submitting-theme {
+.nts-submit-handle {
   background: -webkit-radial-gradient( #2CB709 33%, #1F8306) !important;
 }
+
+div.nts-submit-popup {
+-webkit-background-clip: border-box;
+-webkit-background-origin: padding-box;
+-webkit-background-size: auto;
+-webkit-box-shadow: rgb(0, 0, 0) 0px 2px 1px 0px;
+-webkit-text-fill-color: rgb(255, 255, 255);
+-webkit-transition-delay: 0s;
+-webkit-transition-duration: 0.25s;
+-webkit-transition-property: opacity;
+-webkit-transition-timing-function: ease-in;
+background-attachment: scroll;
+background-clip: border-box;
+background-color: rgb(38, 38, 38);
+background-image: none;
+background-origin: padding-box;
+background-size: auto;
+border-bottom-left-radius: 5px;
+border-bottom-right-radius: 5px;
+border-top-left-radius: 5px;
+border-top-right-radius: 5px;
+bottom: 64.28125px;
+box-shadow: rgb(0, 0, 0) 0px 2px 1px 0px;
+cursor: pointer;
+display: block;
+flex-direction: column;
+font-family: Helvetica, Arial, sans-serif;
+font-size: 12px;
+height: 93.71875px;
+line-height: 12.3840503692627px;
+opacity: 1;
+padding-bottom: 9.90723991394043px;
+padding-left: 12.3840503692627px;
+padding-right: 12.3840503692627px;
+padding-top: 7.43043041229248px;
+position: absolute;
+right: -44.5825805664063px;
+text-align: left;
+transition-delay: 0s;
+transition-duration: 0.25s;
+transition-property: opacity;
+transition-timing-function: ease-in;
+visibility: visible;
+width: 297.203125px;
+z-index: 2;
+}
+
 
 div.player-next-episode {
   border-left: 1px solid rgb(50, 50, 50) !important;
