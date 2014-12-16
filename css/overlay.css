@@ -39,6 +39,9 @@ div#nts-mini-overlay::after {
   content: "";
 }
 
+.submitting-theme {
+  background: -webkit-radial-gradient( #2CB709 33%, #1F8306) !important;
+}
 
 div.player-next-episode {
   border-left: 1px solid rgb(50, 50, 50) !important;

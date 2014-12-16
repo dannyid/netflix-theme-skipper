@@ -4,14 +4,14 @@
     , currentEpisodeInfo = {episodeId: '0', themeStart: 9999999999999, themeEnd: 9999999999999}
     , overlay;
   
-  var intervalCheckAllTheThings = setInterval(checkAllTheThings, 500);
+  var intervalCheckAllTheThings = setInterval(checkAllTheThings, 100);
   var intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
 
   function checkAllTheThings() {
     var v = getVideoData();
 
     if (currentlyInTheme(v) === true) {
-      v.player.seek(currentEpisodeInfo.themeEnd * 4004);
+      v.player.seek(currentEpisodeInfo.themeEnd);
     };
 
     if (v.episodeId.toString() === currentEpisodeInfo.episodeId) {
@@ -43,9 +43,9 @@
       url: "http://localhost:3000/"+episodeId
     })
     .done(function(res) {
-      console.log(res[0]);
+      //console.log(res[0]);
       currentEpisodeInfo.themeStart = res[0].themeStart;
-      currentEpisodeInfo.themeEnd = res[0].themeEnd;
+      currentEpisodeInfo.themeEnd = Math.floor(res[0].themeEnd / 4004) * 4004; //Netflix will only seek to multiples of 4004 (shrug)
       console.log(currentEpisodeInfo);
     })
     .error(function() {
@@ -54,16 +54,16 @@
   };
 
   function currentlyInTheme(v) {
-    if (v.currentTime > currentEpisodeInfo.themeEnd * 4004) {
-      console.log("Theme has ended. Watching happyily again."); 
+    if (v.currentTime > currentEpisodeInfo.themeEnd) {
+      //console.log("Theme has ended. Watching happyily again."); 
       return false;
     } 
     else if (v.currentTime < currentEpisodeInfo.themeStart) {
-      console.log("Theme hasn't started yet.");  
+      //console.log("Theme hasn't started yet.");  
       return false;
     } 
-    else if (v.currentTime >= currentEpisodeInfo.themeStart && v.currentTime < currentEpisodeInfo.themeEnd * 4004) {
-      console.log("Taken to theme end.");
+    else if (v.currentTime >= currentEpisodeInfo.themeStart && v.currentTime < currentEpisodeInfo.themeEnd) {
+      console.log("Taken to theme end:");
       return true;
     };
   };
