@@ -14,11 +14,12 @@
       v.player.seek(currentEpisodeInfo.themeEnd);
     };
 
+    // If we're still looking at the same episode, do nothing. If we're on a new one, update info.
     if (v.episodeId.toString() === currentEpisodeInfo.episodeId) {
-      // chill the fuck out
+      // do nothing
     } else {
       currentEpisodeInfo.episodeId = v.episodeId.toString();
-      getThemeTimes(currentEpisodeInfo.episodeId);
+      getThemeTimes(currentEpisodeInfo.episodeId, v);
       intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
     };
   };
@@ -38,19 +39,34 @@
     }
   };
 
-  function getThemeTimes(episodeId) {
+  function getThemeTimes(episodeId, v) {
     $.ajax({ 
       url: "http://localhost:3000/"+episodeId
     })
     .done(function(res) {
-      //console.log(res[0]);
-      currentEpisodeInfo.themeStart = res[0].themeStart;
-      currentEpisodeInfo.themeEnd = Math.floor(res[0].themeEnd / 4004) * 4004; //Netflix will only seek to multiples of 4004 (shrug)
-      console.log(currentEpisodeInfo);
+      if (res[0] !== undefined) { 
+        console.log("\n* * * Episode "+v.episodeId+" found! * * *");
+        currentEpisodeInfo.themeStart = res[0].themeStart;
+        currentEpisodeInfo.themeEnd = Math.floor(res[0].themeEnd / 4004) * 4004; //Netflix will only seek to multiples of 4004 (shrug)
+        logCurrentEpisode(v); 
+      } else {
+        console.log("* * * Episode "+v.episodeId+" NOT found :( * * *");
+        currentEpisodeInfo.themeStart = 9999999999999;
+        currentEpisodeInfo.themeEnd = 9999999999999;
+        logCurrentEpisode(v); 
+      }
     })
     .error(function() {
       console.log("there was an error with the ajax");
     })
+  };
+
+  function logCurrentEpisode(v) {
+      console.log(v.showName+' - "'+v.episodeName+'"');
+      console.log("Season "+v.seasonNum+", Episode "+v.episodeNum);
+      console.log("Theme Start: "+currentEpisodeInfo.themeStart);
+      console.log("Theme End:   "+currentEpisodeInfo.themeEnd);
+      console.log("--------------------");
   };
 
   function currentlyInTheme(v) {
