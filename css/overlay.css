@@ -33,6 +33,9 @@ div#nts-mini-overlay span {
   line-height: 3em;
   font-weight: bold;
   margin-top: -3px;
+  background: linear-gradient( #FF2828, #430000);
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
 div#nts-mini-overlay span:hover {
@@ -40,24 +43,14 @@ div#nts-mini-overlay span:hover {
   color: #CF2325;
 }
 
-div#nts-scrubber {
+div#nts-scrubber-theme {
   height: 1.6em;
   border-radius: 0em;
   box-shadow: transparent 0px 0.0em 0.0em 1px;
   overflow: hidden;
   box-sizing: border-box;
   position: absolute;
-  background-image: -webkit-linear-gradient(
-    right bottom,
-    rgba(0, 0, 0, 0.25) 25%,
-    rgba(0, 0, 0, 0.25) 60%,
-    rgba(0, 0, 0, 0.10) 60%,
-    rgba(0, 0, 0, 0.10) 75%,
-    rgba(0, 0, 0, 0.25) 75%,
-    rgba(0, 0, 0, 0.25) 100%,
-    rgba(0, 0, 0, 0.10) 100%
-  );
-  background-size: 10px 10px;
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .nts-submit-handle {

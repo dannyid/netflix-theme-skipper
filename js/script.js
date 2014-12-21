@@ -19,7 +19,7 @@
       // do nothing
     } else {
       // If the episode ID has changed, it means a new episode has been put on but the page hasn't been reloaded
-      // Therefore we must get new episode info and re-inject overlays
+      // Therefore we must get new episode info and re-inject overlays (because Netflix reinstantiates player)
       currentEpisodeInfo.episodeId = v.episodeId.toString();
       getThemeTimes(currentEpisodeInfo.episodeId, v);
       intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
@@ -122,7 +122,7 @@
   function injectOverlay(nextButton) {
     overlay = $('<div id="nts-mini-overlay">'+
                   '<span>N</span>'+
-/*                  '<div class="player-menu nts-submit-popup">'+
+                  '<div class="player-menu nts-submit-popup">'+
                     '<h1>Hood Shit</h1>'+
                     '<div class="player-next-episode-info">'+
                       '<div class="image-container">'+
@@ -135,7 +135,7 @@
                       '</div>'+
                     '</div>'+
                   '</div>'+
-*/                '</div>');
+                '</div>');
     nextButton.before(overlay);
     overlay.click(function() {
       console.log(overlay);
@@ -143,14 +143,14 @@
   };
 
   function injectScrubber(netflixScrubber, themeStart, themeEnd) {
-    ntsScrubber = $('<div id="nts-scrubber"></div>');
-
     var v = getVideoData();
-    var start = themeStart / v.duration * 100;
-    var length = (themeEnd - themeStart) / v.duration * 100;
+    var startPercent = themeStart / v.duration * 100;
+    var durationPercent = (themeEnd - themeStart) / v.duration * 100;
 
-    ntsScrubber.css("left", start+"%");
-    ntsScrubber.css("width", length+"%");
+    ntsScrubber = $('<div id="nts-scrubber-theme"></div>');
+
+    ntsScrubber.css("left", startPercent+"%");
+    ntsScrubber.css("width", durationPercent+"%");
     netflixScrubber.prepend(ntsScrubber)
   };
 
