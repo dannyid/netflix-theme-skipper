@@ -1,4 +1,3 @@
-(function(){
   var $ = jQuery
     , n = netflix.cadmium
     , currentEpisodeInfo = {episodeId: '0', themeStart: 9999999999999, themeEnd: 9999999999999}
@@ -57,13 +56,30 @@
       }
     })
     .error(function() {
-      console.log("there was an error with the ajax");
+      console.log("There was an error GETting the data");
+    })
+  };
+  
+  function postThemeTimes(episodeId, themeStart, themeEnd) {
+    $.ajax({ 
+      type: "POST",
+      url: "http://localhost:3000/"+episodeId,
+      data: {
+        themeStart: themeStart,
+        themeEnd: themeEnd
+      }
+    })
+    .done(function(res) {
+      console.log("Data posted");
+    })
+    .error(function() {
+      console.log("There was an error POSTing the data");
     })
   };
 
   function logCurrentEpisode(v) {
-      console.log(v.showName+' - "'+v.episodeName+'"');
-      console.log("Season "+v.seasonNum+", Episode "+v.episodeNum);
+      console.log(v.showName);
+      console.log("Season "+v.seasonNum+": Ep. "+v.episodeNum+" \""+v.episodeName+"\"");
       console.log("Theme Start: "+currentEpisodeInfo.themeStart);
       console.log("Theme End:   "+currentEpisodeInfo.themeEnd);
       console.log("--------------------");
@@ -126,5 +142,5 @@
       return true;
     };  
   };
-})();
+
 
