@@ -1,6 +1,7 @@
   var $ = jQuery
     , n = netflix.cadmium
     , currentEpisodeInfo = {episodeId: '0', themeStart: 9999999999999, themeEnd: 9999999999999}
+    , ntsScrubber
     , overlay;
   
   var intervalCheckAllTheThings = setInterval(checkAllTheThings, 100);
@@ -17,6 +18,8 @@
     if (v.episodeId.toString() === currentEpisodeInfo.episodeId) {
       // do nothing
     } else {
+      // If the episode ID has changed, it means a new episode has been put on but the page hasn't been reloaded
+      // Therefore we must get new episode info and re-inject overlays
       currentEpisodeInfo.episodeId = v.episodeId.toString();
       getThemeTimes(currentEpisodeInfo.episodeId, v);
       intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
@@ -25,16 +28,18 @@
 
   function getVideoData() {
     var activeVideo = n.metadata.getActiveVideo();
+    var player =      n.objects.videoPlayer();
 
     return {
-      player:         n.objects.videoPlayer()
+      player:         player
     , showName:       n.metadata.getMetadata().video.title
     , seasonNum:      n.metadata.getActiveSeason().title.slice(7)
     , episodeName:    activeVideo.title
     , episodeNum:     activeVideo.seq
     , episodeId:      activeVideo.episodeId.toString()
     , isFullscreen:   n.fullscreen.isFullscreen()
-    , currentTime:    n.objects.videoPlayer().getCurrentTime() 
+    , currentTime:    player.getCurrentTime() 
+    , duration:       player.getDuration()
     }
   };
 
@@ -59,7 +64,7 @@
       console.log("There was an error GETting the data");
     })
   };
-  
+
   function postThemeTimes(episodeId, themeStart, themeEnd) {
     $.ajax({ 
       type: "POST",
@@ -71,6 +76,8 @@
     })
     .done(function(res) {
       console.log("Data posted");
+      currentEpisodeInfo.themeStart = themeStart;
+      currentEpisodeInfo.themeEnd = themeEnd;
     })
     .error(function() {
       console.log("There was an error POSTing the data");
@@ -103,8 +110,11 @@
 
   function checkIfPlayerLoaded() {
     var nextButton = $('div.player-next-episode')
+    var netflixScrubber = $("#scrubber-component > .player-scrubber-progress");
+
     if (typeof nextButton[0] !== "undefined" && isOverlayPresent() === false) {
       injectOverlay(nextButton);
+      injectScrubber(netflixScrubber, currentEpisodeInfo.themeStart, currentEpisodeInfo.themeEnd);
       clearInterval(intervalCheckIfPlayerLoaded);
     };  
   };
@@ -125,11 +135,23 @@
                       '</div>'+
                     '</div>'+
                   '</div>'+
-*/                '</div>') ;
+*/                '</div>');
     nextButton.before(overlay);
     overlay.click(function() {
       console.log(overlay);
     });
+  };
+
+  function injectScrubber(netflixScrubber, themeStart, themeEnd) {
+    ntsScrubber = $('<div id="nts-scrubber"></div>');
+
+    var v = getVideoData();
+    var start = themeStart / v.duration * 100;
+    var length = (themeEnd - themeStart) / v.duration * 100;
+
+    ntsScrubber.css("left", start+"%");
+    ntsScrubber.css("width", length+"%");
+    netflixScrubber.prepend(ntsScrubber)
   };
 
   function isOverlayPresent() {
