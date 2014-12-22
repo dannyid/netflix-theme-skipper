@@ -1,8 +1,9 @@
   var $ = jQuery
     , n = netflix.cadmium
-    , currentEpisodeInfo = {episodeId: '0', themeStart: 9999999999999, themeEnd: 9999999999999}
+    , currentEpisodeInfo = {episodeId: '0', themeStart: undefined, themeEnd: undefined}
     , ntsScrubber
-    , overlay;
+    , overlay
+    , sm;
   
   var intervalCheckAllTheThings = setInterval(checkAllTheThings, 100);
   var intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
@@ -55,8 +56,8 @@
         logCurrentEpisode(v); 
       } else {
         console.log("* * * Episode "+v.episodeId+" NOT found :( * * *");
-        currentEpisodeInfo.themeStart = 9999999999999;
-        currentEpisodeInfo.themeEnd = 9999999999999;
+        currentEpisodeInfo.themeStart = undefined;
+        currentEpisodeInfo.themeEnd = undefined;
         logCurrentEpisode(v); 
       }
     })
@@ -104,6 +105,9 @@
     else if (v.currentTime >= currentEpisodeInfo.themeStart && v.currentTime < currentEpisodeInfo.themeEnd) {
       console.log("Taken to theme end:");
       return true;
+    } else if (currentEpisodeInfo.themeStart >= 0 || currentEpisodeInfo.themeEnd >= 0) {
+      //console.log('unknown episode'); 
+      return false;
     };
   };
 
@@ -114,8 +118,9 @@
 
     if (typeof nextButton[0] !== "undefined" && isOverlayPresent() === false) {
       injectOverlay(nextButton);
-      injectScrubber(netflixScrubber, currentEpisodeInfo.themeStart, currentEpisodeInfo.themeEnd);
+      injectScrubber(netflixScrubber, currentEpisodeInfo.themeStart || 9999999999999, currentEpisodeInfo.themeEnd || 9999999999999);
       clearInterval(intervalCheckIfPlayerLoaded);
+      sm = submitMode();
     };  
   };
 
@@ -152,6 +157,55 @@
     ntsScrubber.css("left", startPercent+"%");
     ntsScrubber.css("width", durationPercent+"%");
     netflixScrubber.prepend(ntsScrubber)
+  };
+
+  function submitMode() {
+    var whichEnd = "start";
+    var scrubberHandle = $("button.player-scrubber-target > div.player-scrubber-handle");
+    var scrubberTheme = $('div#nts-scrubber-theme');
+    var intervalLockThemeToTime;
+
+    function enter() { 
+      intervalLockThemeToTime = setInterval(lockThemeToTime, 100);
+      scrubberHandle.addClass('nts-submit-mode'); 
+      scrubberTheme.addClass('nts-submit-mode');
+    };
+
+    function leave() { 
+      clearInterval(intervalLockThemeToTime);
+      scrubberHandle.removeClass('nts-submit-mode'); 
+      scrubberTheme.removeClass('nts-submit-mode');
+    };
+
+    function lockThemeToTime() {
+      var v = getVideoData();
+  
+      if (whichEnd === "start") {
+      console.log("start")
+        currentEpisodeInfo.themeStart = v.currentTime;
+        scrubberTheme.css("left", ((currentEpisodeInfo.themeStart / v.duration) * 100)+"%")
+      } else if (whichEnd === "end") {
+      console.log("end")
+        currentEpisodeInfo.themeEnd = Math.floor(v.currentTime / 4004) * 4004;
+        scrubberTheme.css("width", (((currentEpisodeInfo.themeEnd - currentEpisodeInfo.themeStart) / v.duration) * 100)+"%")
+      };
+    };
+    
+    function which (whichOne) {
+      if (whichOne !== undefined) {
+        whichEnd = whichOne;
+        return whichEnd;
+      } else {
+        return whichEnd;
+      }
+    };
+
+    return {
+      enter: enter,
+      leave: leave,
+      lockThemeToTime: lockThemeToTime,
+      whichEnd: which 
+    };
   };
 
   function isOverlayPresent() {
