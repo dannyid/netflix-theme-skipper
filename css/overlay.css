@@ -53,7 +53,7 @@ div#nts-scrubber-theme {
   background: rgba(0, 0, 0, 0.5);
 }
 
-.nts-submit-handle {
+.nts-submit-mode {
   background: -webkit-radial-gradient( #2CB709 33%, #1F8306) !important;
 }
 
