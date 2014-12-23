@@ -4,10 +4,16 @@
     , ntsScrubber
     , overlay
     , sm;
+
+  var BASE_URL = "http://localhost:3000";
   
   var intervalCheckAllTheThings = setInterval(checkAllTheThings, 100);
   var intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
 
+  // This is the meat and potatos. It runs repeatedly in order to keep tabs on
+  //  a) Which episodeId is being watched
+  //  b) currentTime in the episode
+  // and compares those to information received from the database 
   function checkAllTheThings() {
     var v = getVideoData();
 
@@ -15,18 +21,16 @@
       v.player.seek(currentEpisodeInfo.themeEnd);
     };
 
-    // If we're still looking at the same episode, do nothing. If we're on a new one, update info.
-    if (v.episodeId.toString() === currentEpisodeInfo.episodeId) {
-      // do nothing
-    } else {
-      // If the episode ID has changed, it means a new episode has been put on but the page hasn't been reloaded
-      // Therefore we must get new episode info and re-inject overlays (because Netflix reinstantiates player)
+    // If the episode ID has changed, it means a new episode has been put on but the page hasn't been reloaded
+    // Therefore we must get new episode info and re-inject overlays (because Netflix reinstantiates player)
+    if (v.episodeId.toString() !== currentEpisodeInfo.episodeId) {
       currentEpisodeInfo.episodeId = v.episodeId.toString();
       getThemeTimes(currentEpisodeInfo.episodeId, v);
       intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
     };
   };
 
+  // This function gets maaaad stuff from the "netflix" object
   function getVideoData() {
     var activeVideo = n.metadata.getActiveVideo();
     var player =      n.objects.videoPlayer();
@@ -44,9 +48,10 @@
     }
   };
 
+  // Query the database for theme start and end times for the current episode
   function getThemeTimes(episodeId, v) {
     $.ajax({ 
-      url: "http://localhost:3000/"+episodeId
+      url: BASE_URL+"/"+episodeId
     })
     .done(function(res) {
       if (res[0] !== undefined) { 
@@ -66,10 +71,11 @@
     })
   };
 
+  // Submit theme start and end time information to database
   function postThemeTimes(episodeId, themeStart, themeEnd) {
     $.ajax({ 
       type: "POST",
-      url: "http://localhost:3000/"+episodeId,
+      url: BASE_URL+"/"+episodeId,
       data: {
         themeStart: themeStart,
         themeEnd: themeEnd
@@ -85,6 +91,7 @@
     })
   };
 
+  // This just prints out a ton of useful info to the console. And it looks nice
   function logCurrentEpisode(v) {
       console.log(v.showName);
       console.log("Season "+v.seasonNum+": Ep. "+v.episodeNum+" \""+v.episodeName+"\"");
@@ -93,6 +100,7 @@
       console.log("--------------------");
   };
 
+  // Comparing current time in episode to start and end times received from the database. Returns true / false
   function currentlyInTheme(v) {
     if (v.currentTime > currentEpisodeInfo.themeEnd) {
       //console.log("Theme has ended. Watching happyily again."); 
@@ -111,7 +119,8 @@
     };
   };
 
-
+  // This needs to happen when a new episode is loaded because the page doesn't reload but Netflix's javascript player reloads
+  // as a result, the overlays that were put in by this extension get destroyed and new ones need to be injected
   function checkIfPlayerLoaded() {
     var nextButton = $('div.player-next-episode')
     var netflixScrubber = $("#scrubber-component > .player-scrubber-progress");
@@ -124,6 +133,7 @@
     };  
   };
 
+  // This injects the app icon onto the player UI
   function injectOverlay(nextButton) {
     overlay = $('<div id="nts-mini-overlay">'+
                   '<span>N</span>'+
@@ -147,6 +157,7 @@
     });
   };
 
+  // This injects the darkened scrubber area that highlights where the theme is
   function injectScrubber(netflixScrubber, themeStart, themeEnd) {
     var v = getVideoData();
     var startPercent = themeStart / v.duration * 100;
@@ -159,6 +170,19 @@
     netflixScrubber.prepend(ntsScrubber)
   };
 
+  // Checks if the app icon has already been loaded so as to not load it again
+  function isOverlayPresent() {
+    var overlay = $('div#nts-mini-overlay');
+
+    if (overlay.length === 0) {
+      return false;
+    } 
+    else if (overlay.length > 0) {
+      return true;
+    };  
+  };
+
+  // Puts the user into "submit mode" where they mark the beginning and end of the theme and then submit it to the database
   function submitMode() {
     var whichEnd = "start";
     var scrubberHandle = $("button.player-scrubber-target > div.player-scrubber-handle");
@@ -191,7 +215,7 @@
       };
     };
     
-    function which (whichOne) {
+    function which(whichOne) {
       if (whichOne !== undefined) {
         whichEnd = whichOne;
         return whichEnd;
@@ -200,13 +224,18 @@
       }
     };
 
+    function submit() {
+    };
+
     return {
       enter: enter,
       leave: leave,
       lockThemeToTime: lockThemeToTime,
-      whichEnd: which 
+      whichEnd: which,
+      submit: submit
     };
   };
+
 
   function isOverlayPresent() {
     var overlay = $('div#nts-mini-overlay');
@@ -218,5 +247,4 @@
       return true;
     };  
   };
-
 
