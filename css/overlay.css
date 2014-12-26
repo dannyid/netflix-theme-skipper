@@ -38,9 +38,16 @@ div#nts-mini-overlay span {
   color: transparent;
 }
 
-div#nts-mini-overlay span:hover {
+div#nts-mini-overlay:hover span {
   font-size: 3.8em;
   color: #CF2325;
+  background: linear-gradient( #FF5C5C, #700000);
+  -webkit-background-clip: text;
+  color: transparent;
+  padding-left: 0em;
+  margin-right: -0.05em;
+  margin-left: -0.05em;
+  margin-top: -0.1em;
 }
 
 div#nts-scrubber-theme {
@@ -102,7 +109,6 @@ div.nts-submit-popup {
   width: 297.203125px;
   z-index: 2;
 }
-
 
 div.player-next-episode {
   border-left: 1px solid rgb(50, 50, 50) !important;

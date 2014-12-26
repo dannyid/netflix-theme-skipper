@@ -23,8 +23,8 @@
 
     // If the episode ID has changed, it means a new episode has been put on but the page hasn't been reloaded
     // Therefore we must get new episode info and re-inject overlays (because Netflix reinstantiates player)
-    if (v.episodeId.toString() !== currentEpisodeInfo.episodeId) {
-      currentEpisodeInfo.episodeId = v.episodeId.toString();
+    if (v.episodeId !== currentEpisodeInfo.episodeId) {
+      currentEpisodeInfo.episodeId = v.episodeId;
       getThemeTimes(currentEpisodeInfo.episodeId, v);
       intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
     };
@@ -41,7 +41,7 @@
     , seasonNum:      n.metadata.getActiveSeason().title.slice(7)
     , episodeName:    activeVideo.title
     , episodeNum:     activeVideo.seq
-    , episodeId:      activeVideo.episodeId.toString()
+    , episodeId:      parseInt(activeVideo.episodeId)
     , isFullscreen:   n.fullscreen.isFullscreen()
     , currentTime:    player.getCurrentTime() 
     , duration:       player.getDuration()
@@ -68,26 +68,6 @@
     })
     .error(function() {
       console.log("There was an error GETting the data");
-    })
-  };
-
-  // Submit theme start and end time information to database
-  function postThemeTimes(episodeId, themeStart, themeEnd) {
-    $.ajax({ 
-      type: "POST",
-      url: BASE_URL+"/"+episodeId,
-      data: {
-        themeStart: themeStart,
-        themeEnd: themeEnd
-      }
-    })
-    .done(function(res) {
-      console.log("Data posted");
-      currentEpisodeInfo.themeStart = themeStart;
-      currentEpisodeInfo.themeEnd = themeEnd;
-    })
-    .error(function() {
-      console.log("There was an error POSTing the data");
     })
   };
 
@@ -127,7 +107,7 @@
 
     if (typeof nextButton[0] !== "undefined" && isOverlayPresent() === false) {
       injectOverlay(nextButton);
-      injectScrubber(netflixScrubber, currentEpisodeInfo.themeStart || 9999999999999, currentEpisodeInfo.themeEnd || 9999999999999);
+      injectScrubber(netflixScrubber, currentEpisodeInfo.themeStart, currentEpisodeInfo.themeEnd);
       clearInterval(intervalCheckIfPlayerLoaded);
       sm = submitMode();
     };  
@@ -153,7 +133,12 @@
                 '</div>');
     nextButton.before(overlay);
     overlay.click(function() {
-      console.log(overlay);
+      if (currentEpisodeInfo.themeStart === "undefined" && currentEpisodeInfo.themeEnd === "undefined") {
+        console.log("go into submit mode");
+        sm.enter();
+      } else {
+        console.log("go into report mode");
+      }; 
     });
   };
 
@@ -188,17 +173,27 @@
     var scrubberHandle = $("button.player-scrubber-target > div.player-scrubber-handle");
     var scrubberTheme = $('div#nts-scrubber-theme');
     var intervalLockThemeToTime;
+    var submitTimes = {
+      themeStart: undefined,
+      themeEnd: undefined
+    };
 
     function enter() { 
+      currentEpisodeInfo.themeStart = undefined;
+      currentEpisodeInfo.themeEnd = undefined;
       intervalLockThemeToTime = setInterval(lockThemeToTime, 100);
       scrubberHandle.addClass('nts-submit-mode'); 
       scrubberTheme.addClass('nts-submit-mode');
+      which("start");
     };
 
     function leave() { 
       clearInterval(intervalLockThemeToTime);
+      currentEpisodeInfo.themeStart = parseInt(submitTimes.themeStart);
+      currentEpisodeInfo.themeEnd = parseInt(submitTimes.themeEnd);
       scrubberHandle.removeClass('nts-submit-mode'); 
       scrubberTheme.removeClass('nts-submit-mode');
+      which("start");
     };
 
     function lockThemeToTime() {
@@ -206,12 +201,17 @@
   
       if (whichEnd === "start") {
       console.log("start")
-        currentEpisodeInfo.themeStart = v.currentTime;
-        scrubberTheme.css("left", ((currentEpisodeInfo.themeStart / v.duration) * 100)+"%")
+        submitTimes.themeStart = v.currentTime;
+        scrubberTheme.css("left", ((submitTimes.themeStart / v.duration) * 100)+"%");
+        if (submitTimes.themeEnd === undefined) {
+          scrubberTheme.css("width", "0%");
+        } else {
+          scrubberTheme.css("width", (((submitTimes.themeEnd - submitTimes.themeStart) / v.duration) * 100)+"%");
+        };
       } else if (whichEnd === "end") {
       console.log("end")
-        currentEpisodeInfo.themeEnd = Math.floor(v.currentTime / 4004) * 4004;
-        scrubberTheme.css("width", (((currentEpisodeInfo.themeEnd - currentEpisodeInfo.themeStart) / v.duration) * 100)+"%")
+        submitTimes.themeEnd = Math.floor(v.currentTime / 4004) * 4004;
+        scrubberTheme.css("width", (((submitTimes.themeEnd - submitTimes.themeStart) / v.duration) * 100)+"%");
       };
     };
     
@@ -224,7 +224,25 @@
       }
     };
 
+    // Submit theme start and end time information to database
     function submit() {
+      // options is the currentEpisodeInfo object
+      $.ajax({ 
+        type: "POST",
+        url: BASE_URL+"/"+currentEpisodeInfo.episodeId,
+        data: {
+          themeStart: parseInt(submitTimes.themeStart),
+          themeEnd: parseInt(submitTimes.themeEnd)
+        }
+      })
+      .done(function(res) {
+        console.log("Data posted");
+        submitTimes.themeStart = undefined;
+        submitTimes.themeEnd = undefined;
+      })
+      .error(function() {
+        console.log("There was an error POSTing the data");
+      })
     };
 
     return {
@@ -232,7 +250,10 @@
       leave: leave,
       lockThemeToTime: lockThemeToTime,
       whichEnd: which,
-      submit: submit
+      submit: submit,
+      getSubmitTimes: function getSubmitTimes() {
+        return submitTimes;
+      }
     };
   };
 
