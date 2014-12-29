@@ -105,7 +105,7 @@
     var $nextButton = $('div.player-next-episode')
     var $netflixScrubber = $("#scrubber-component > .player-scrubber-progress");
 
-    if (typeof $nextButton[0] !== "undefined" && isOverlayPresent() === false) {
+    if (typeof $nextButton[0] !== undefined && isOverlayPresent() === false) {
       injectOverlay($nextButton);
       injectScrubber($netflixScrubber, currentEpisodeInfo.themeStart, currentEpisodeInfo.themeEnd);
       clearInterval(intervalCheckIfPlayerLoaded);
