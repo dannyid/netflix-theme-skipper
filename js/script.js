@@ -32,16 +32,16 @@
 
   // This function gets maaaad stuff from the "netflix" object
   function getVideoData() {
-    var activeVideo = n.metadata.getActiveVideo();
+    var activeEpisode = n.metadata.getActiveVideo();
     var player =      n.objects.videoPlayer();
 
     return {
       player:         player
     , showName:       n.metadata.getMetadata().video.title
     , seasonNum:      n.metadata.getActiveSeason().title.slice(7)
-    , episodeName:    activeVideo.title
-    , episodeNum:     activeVideo.seq
-    , episodeId:      parseInt(activeVideo.episodeId)
+    , episodeName:    activeEpisode.title
+    , episodeNum:     activeEpisode.seq
+    , episodeId:      parseInt(activeEpisode.episodeId)
     , isFullscreen:   n.fullscreen.isFullscreen()
     , currentTime:    player.getCurrentTime() 
     , duration:       player.getDuration()
