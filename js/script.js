@@ -173,7 +173,7 @@
   // Puts the user into "submit mode" where they mark the beginning and end of the theme and then submit it to the database
   function submitMode() {
     var whichEnd = "start";
-    var $scrubberHandle = $("button.player-scrubber-target > div.player-scrubber-handle");
+    var $scrubberHandle = $("div#scrubber-component button.player-scrubber-target > div.player-scrubber-handle");
     var $scrubberTheme = $('div#nts-scrubber-theme');
     var $submitPopup = $('div.nts-submit-popup');
     var intervalLockThemeToTime;
