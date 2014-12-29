@@ -1,8 +1,8 @@
   var $ = jQuery
     , n = netflix.cadmium
     , currentEpisodeInfo = {episodeId: '0', themeStart: undefined, themeEnd: undefined}
-    , ntsScrubber
-    , overlay
+    , $ntsScrubber
+    , $overlay
     , sm;
 
   var BASE_URL = "http://localhost:3000";
@@ -102,67 +102,70 @@
   // This needs to happen when a new episode is loaded because the page doesn't reload but Netflix's javascript player reloads
   // as a result, the overlays that were put in by this extension get destroyed and new ones need to be injected
   function checkIfPlayerLoaded() {
-    var nextButton = $('div.player-next-episode')
-    var netflixScrubber = $("#scrubber-component > .player-scrubber-progress");
+    var $nextButton = $('div.player-next-episode')
+    var $netflixScrubber = $("#scrubber-component > .player-scrubber-progress");
 
-    if (typeof nextButton[0] !== "undefined" && isOverlayPresent() === false) {
-      injectOverlay(nextButton);
-      injectScrubber(netflixScrubber, currentEpisodeInfo.themeStart, currentEpisodeInfo.themeEnd);
+    if (typeof $nextButton[0] !== "undefined" && isOverlayPresent() === false) {
+      injectOverlay($nextButton);
+      injectScrubber($netflixScrubber, currentEpisodeInfo.themeStart, currentEpisodeInfo.themeEnd);
       clearInterval(intervalCheckIfPlayerLoaded);
       sm = submitMode();
     };  
   };
 
   // This injects the app icon onto the player UI
-  function injectOverlay(nextButton) {
-    overlay = $('<div id="nts-mini-overlay">'+
+  function injectOverlay($nextButton) {
+    var $submitPopup;
+    
+    // Create overlay
+    $overlay = $('<div id="nts-mini-overlay">'+
                   '<span>N</span>'+
-                  '<div class="player-menu nts-submit-popup">'+
-                    '<h1>Hood Shit</h1>'+
-                    '<div class="player-next-episode-info">'+
-                      '<div class="image-container">'+
-                        '<img class="next-episode-image" src="http://so0.akam.nflximg.com/soa1/106/1742156106.jpg" style="margin-left: 0px;">'+
-                        '<div class="play-icon"></div>'+
-                      '</div>'+
-                      '<div class="player-next-episode-description">'+
-                        '<h2>Ep. 19 Heart of Glory</h2>'+
-                        '<p>Worf must choose between his loyalty to Starfleet and his Klingon heritage when two Klingon fugitives take over the Enterprise.</p>'+
-                      '</div>'+
-                    '</div>'+
-                  '</div>'+
+                  '<div class="nts-submit-popup">Submit<br>Mode</div>'+
                 '</div>');
-    nextButton.before(overlay);
-    overlay.click(function() {
-      if (currentEpisodeInfo.themeStart === "undefined" && currentEpisodeInfo.themeEnd === "undefined") {
-        console.log("go into submit mode");
-        sm.enter();
-      } else {
-        console.log("go into report mode");
-      }; 
-    });
+    // Insert overlay
+    $nextButton.before($overlay);
+    
+    // Grab popup div
+    $submitPopup = $overlay.children('div.nts-submit-popup')
+
+    // If the episode is unknown, enable submit mode divs
+    if (currentEpisodeInfo.themeStart === undefined && currentEpisodeInfo.themeEnd === undefined) {
+      $overlay.children('span').on('mouseenter', function handlerIn(){
+        $submitPopup.fadeIn(200);
+      });
+
+      $overlay.on('mouseleave', function handlerOut() {
+        $submitPopup.fadeOut(200);
+      });
+    };
+
+    // Enter submit mode when popup is clicked
+    $submitPopup.click(function() {
+      sm.enter();
+    })
   };
 
   // This injects the darkened scrubber area that highlights where the theme is
-  function injectScrubber(netflixScrubber, themeStart, themeEnd) {
+  function injectScrubber($netflixScrubber, themeStart, themeEnd) {
     var v = getVideoData();
     var startPercent = themeStart / v.duration * 100;
     var durationPercent = (themeEnd - themeStart) / v.duration * 100;
 
-    ntsScrubber = $('<div id="nts-scrubber-theme"></div>');
+    $ntsScrubber = $('<div id="nts-scrubber-theme"></div>');
 
-    ntsScrubber.css("left", startPercent+"%");
-    ntsScrubber.css("width", durationPercent+"%");
-    netflixScrubber.prepend(ntsScrubber)
+    $ntsScrubber.css("left", startPercent+"%");
+    $ntsScrubber.css("width", durationPercent+"%");
+    $netflixScrubber.prepend($ntsScrubber)
   };
 
   // Checks if the app icon has already been loaded so as to not load it again
   function isOverlayPresent() {
-    var overlay = $('div#nts-mini-overlay');
+    var $overlay = $('div#nts-mini-overlay');
 
-    if (overlay.length === 0) {
+    if ($overlay.length === 0) {
       return false;
     } 
-    else if (overlay.length > 0) {
+    else if ($overlay.length > 0) {
       return true;
     };  
   };
@@ -170,8 +173,9 @@
   // Puts the user into "submit mode" where they mark the beginning and end of the theme and then submit it to the database
   function submitMode() {
     var whichEnd = "start";
-    var scrubberHandle = $("button.player-scrubber-target > div.player-scrubber-handle");
-    var scrubberTheme = $('div#nts-scrubber-theme');
+    var $scrubberHandle = $("button.player-scrubber-target > div.player-scrubber-handle");
+    var $scrubberTheme = $('div#nts-scrubber-theme');
+    var $submitPopup = $('div.nts-submit-popup');
     var intervalLockThemeToTime;
     var submitTimes = {
       themeStart: undefined,
@@ -181,37 +185,53 @@
     function enter() { 
       currentEpisodeInfo.themeStart = undefined;
       currentEpisodeInfo.themeEnd = undefined;
-      intervalLockThemeToTime = setInterval(lockThemeToTime, 100);
-      scrubberHandle.addClass('nts-submit-mode'); 
-      scrubberTheme.addClass('nts-submit-mode');
       which("start");
+      intervalLockThemeToTime = setInterval(lockThemeToTime, 100);
+      $scrubberHandle.addClass('nts-submit-mode'); 
+      $scrubberTheme.addClass('nts-submit-mode');
+      $submitPopup.addClass('nts-submit-mode');
+      $submitPopup.html('Set<br/>Start')
+      $submitPopup.off('click').click(function submitPopupSetStart(){
+        which('end');
+        $submitPopup.html('Set<br/>End');
+        $submitPopup.off("click").click(function submitPopupSetEnd() {
+          leave();
+          $submitPopup.html('Submit?');
+          $submitPopup.off('click').click(function submitPopupSubmit() {
+            submit(); 
+            $submitPopup.html('Thanks!');
+            $overlay.off('mouseleave').children('span').off('mouseenter');
+            setTimeout(function submitPopupFadeOut() {$submitPopup.fadeOut(200)}, 1000)
+          });
+        })
+      })
     };
 
     function leave() { 
       clearInterval(intervalLockThemeToTime);
       currentEpisodeInfo.themeStart = parseInt(submitTimes.themeStart);
       currentEpisodeInfo.themeEnd = parseInt(submitTimes.themeEnd);
-      scrubberHandle.removeClass('nts-submit-mode'); 
-      scrubberTheme.removeClass('nts-submit-mode');
-      which("start");
+      $scrubberHandle.removeClass('nts-submit-mode'); 
+      $scrubberTheme.removeClass('nts-submit-mode');
+      $submitPopup.removeClass('nts-submit-mode');
     };
 
     function lockThemeToTime() {
       var v = getVideoData();
   
       if (whichEnd === "start") {
-      console.log("start")
+      //console.log("start")
         submitTimes.themeStart = v.currentTime;
-        scrubberTheme.css("left", ((submitTimes.themeStart / v.duration) * 100)+"%");
+        $scrubberTheme.css("left", ((submitTimes.themeStart / v.duration) * 100)+"%");
         if (submitTimes.themeEnd === undefined) {
-          scrubberTheme.css("width", "0%");
+          $scrubberTheme.css("width", "0%");
         } else {
-          scrubberTheme.css("width", (((submitTimes.themeEnd - submitTimes.themeStart) / v.duration) * 100)+"%");
+          $scrubberTheme.css("width", (((submitTimes.themeEnd - submitTimes.themeStart) / v.duration) * 100)+"%");
         };
       } else if (whichEnd === "end") {
-      console.log("end")
+      //console.log("end")
         submitTimes.themeEnd = Math.floor(v.currentTime / 4004) * 4004;
-        scrubberTheme.css("width", (((submitTimes.themeEnd - submitTimes.themeStart) / v.duration) * 100)+"%");
+        $scrubberTheme.css("width", (((submitTimes.themeEnd - submitTimes.themeStart) / v.duration) * 100)+"%");
       };
     };
     
@@ -259,12 +279,12 @@
 
 
   function isOverlayPresent() {
-    var overlay = $('div#nts-mini-overlay');
+    var $overlay = $('div#nts-mini-overlay');
 
-    if (overlay.length === 0) {
+    if ($overlay.length === 0) {
       return false;
     } 
-    else if (overlay.length > 0) {
+    else if ($overlay.length > 0) {
       return true;
     };  
   };

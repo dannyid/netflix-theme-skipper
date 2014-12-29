@@ -38,7 +38,7 @@ div#nts-mini-overlay span {
   color: transparent;
 }
 
-div#nts-mini-overlay:hover span {
+div#nts-mini-overlay span:hover {
   font-size: 3.8em;
   color: #CF2325;
   background: linear-gradient( #FF5C5C, #700000);
@@ -65,49 +65,36 @@ div#nts-scrubber-theme {
 }
 
 div.nts-submit-popup {
-  -webkit-background-clip: border-box;
-  -webkit-background-origin: padding-box;
-  -webkit-background-size: auto;
-  -webkit-box-shadow: rgb(0, 0, 0) 0px 2px 1px 0px;
-  -webkit-text-fill-color: rgb(255, 255, 255);
-  -webkit-transition-delay: 0s;
-  -webkit-transition-duration: 0.25s;
-  -webkit-transition-property: opacity;
-  -webkit-transition-timing-function: ease-in;
-  background-attachment: scroll;
-  background-clip: border-box;
+  display: none;
   background-color: rgb(38, 38, 38);
-  background-image: none;
-  background-origin: padding-box;
-  background-size: auto;
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
-  bottom: 64.28125px;
+  border-radius: 5px;
   box-shadow: rgb(0, 0, 0) 0px 2px 1px 0px;
   cursor: pointer;
-  display: block;
-  flex-direction: column;
-  font-family: Helvetica, Arial, sans-serif;
-  font-size: 12px;
-  height: 93.71875px;
-  line-height: 12.3840503692627px;
-  opacity: 1;
-  padding-bottom: 9.90723991394043px;
-  padding-left: 12.3840503692627px;
-  padding-right: 12.3840503692627px;
-  padding-top: 7.43043041229248px;
+  height: 100%;
+  width: 165%;
+  bottom: 175%;
+  right: -35%;
+  padding-top: 15%;
+  color: white;
   position: absolute;
-  right: -44.5825805664063px;
-  text-align: left;
-  transition-delay: 0s;
-  transition-duration: 0.25s;
-  transition-property: opacity;
-  transition-timing-function: ease-in;
+  text-align: middle;
+  font-size: 2.2em;
+  line-height: 1.4em;
   visibility: visible;
-  width: 297.203125px;
   z-index: 2;
+}
+
+div.nts-submit-popup:after {
+  top: 100%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  right: 36%;
+  position: absolute;
+  border-top-color: #262626;
+  border-width: .7em;
+  margin-left: -.7em;
 }
 
 div.player-next-episode {
