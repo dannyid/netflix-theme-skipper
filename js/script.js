@@ -25,6 +25,8 @@
     // Therefore we must get new episode info and re-inject overlays (because Netflix reinstantiates player)
     if (v.episodeId !== currentEpisodeInfo.episodeId) {
       currentEpisodeInfo.episodeId = v.episodeId;
+      currentEpisodeInfo.themeStart = undefined;
+      currentEpisodeInfo.themeEnd = undefined;
       getThemeTimes(currentEpisodeInfo.episodeId, v);
       intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
     };
