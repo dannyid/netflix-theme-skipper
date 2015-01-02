@@ -24,7 +24,7 @@
     // If the episode ID has changed, it means a new episode has been put on but the page hasn't been reloaded
     // Therefore we must get new episode info and re-inject overlays (because Netflix reinstantiates player)
     if (v.episodeId !== currentEpisodeInfo.episodeId) {
-      currentEpisodeInfo.type = v.type;
+      currentEpisodeInfo.type = v.series.type;
       currentEpisodeInfo.themeStart = undefined;
       currentEpisodeInfo.themeEnd = undefined;
       if (currentEpisodeInfo.type === "show") {
@@ -42,10 +42,8 @@
 
     return {
       player:         player
-    , showName:       n.metadata.getMetadata().video.title
-    , seasonNum:      n.metadata.getActiveSeason() ? n.metadata.getActiveSeason().title.slice(7) : undefined
     , seasonInfo:     n.metadata.getActiveSeason()
-    , type:           n.metadata.getMetadata().video.type
+    , series:         n.metadata.getMetadata().video
     , episodeName:    activeEpisode.title
     , episodeNum:     activeEpisode.seq
     , episodeId:      parseInt(activeEpisode.episodeId)
@@ -80,8 +78,8 @@
 
   // This just prints out a ton of useful info to the console. And it looks nice
   function logCurrentEpisode(v) {
-      var seasonNum = v.title.slice(7)
-      console.log(v.showName);
+      var seasonNum = v.seasonInfo.title.slice(7);
+      console.log(v.series.title);
       console.log("Season "+seasonNum+": Ep. "+v.episodeNum+" \""+v.episodeName+"\"");
       console.log("Theme Start: "+currentEpisodeInfo.themeStart);
       console.log("Theme End:   "+currentEpisodeInfo.themeEnd);
@@ -128,7 +126,7 @@
     // Create overlay
     $overlay = $('<div id="nts-mini-overlay">'+
                   '<span>N</span>'+
-                  '<div class="nts-submit-popup">Submit<br>Mode</div>'+
+                  '<div class="nts-submit-popup"><p>Submit<br>Mode</p></div>'+
                 '</div>');
     // Insert overlay
     $nextButton.before($overlay);
@@ -198,16 +196,16 @@
       $scrubberHandle.addClass('nts-submit-mode'); 
       $scrubberTheme.addClass('nts-submit-mode');
       $submitPopup.addClass('nts-submit-mode');
-      $submitPopup.html('Set<br/>Start')
+      $submitPopup.children('p').html('Set<br/>Start')
       $submitPopup.off('click').click(function submitPopupSetStart(){
         which('end');
-        $submitPopup.html('Set<br/>End');
+        $submitPopup.children('p').html('Set<br/>End');
         $submitPopup.off("click").click(function submitPopupSetEnd() {
           leave();
-          $submitPopup.html('Submit?');
+          $submitPopup.children('p').html('Submit?').css('margin-top', '0.7em');
           $submitPopup.off('click').click(function submitPopupSubmit() {
             submit(); 
-            $submitPopup.html('Thanks!');
+            $submitPopup.children('p').html('Thanks!');
             $overlay.off('mouseleave').children('span').off('mouseenter');
             setTimeout(function submitPopupFadeOut() {$submitPopup.fadeOut(200)}, 1000)
           });

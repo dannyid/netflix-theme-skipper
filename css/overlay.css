@@ -97,6 +97,11 @@ div.nts-submit-popup:after {
   margin-left: -.7em;
 }
 
+div.nts-submit-popup p {
+  margin: 0;
+  padding: 0;
+}
+
 div.player-next-episode {
   border-left: 1px solid rgb(50, 50, 50) !important;
   margin-left: 0px !important;
