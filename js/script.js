@@ -1,6 +1,6 @@
   var $ = jQuery
     , n = netflix.cadmium
-    , currentEpisodeInfo = {episodeId: '0', themeStart: undefined, themeEnd: undefined}
+    , currentEpisodeInfo = {episodeId: 0, themeStart: undefined, themeEnd: undefined, type: undefined}
     , $ntsScrubber
     , $overlay
     , sm;
@@ -10,7 +10,7 @@
   var intervalCheckAllTheThings = setInterval(checkAllTheThings, 100);
   var intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
 
-  // This is the meat and potatos. It runs repeatedly in order to keep tabs on
+  // This runs repeatedly in order to keep tabs on
   //  a) Which episodeId is being watched
   //  b) currentTime in the episode
   // and compares those to information received from the database 
@@ -24,10 +24,13 @@
     // If the episode ID has changed, it means a new episode has been put on but the page hasn't been reloaded
     // Therefore we must get new episode info and re-inject overlays (because Netflix reinstantiates player)
     if (v.episodeId !== currentEpisodeInfo.episodeId) {
-      currentEpisodeInfo.episodeId = v.episodeId;
+      currentEpisodeInfo.type = v.type;
       currentEpisodeInfo.themeStart = undefined;
       currentEpisodeInfo.themeEnd = undefined;
-      getThemeTimes(currentEpisodeInfo.episodeId, v);
+      if (currentEpisodeInfo.type === "show") {
+        currentEpisodeInfo.episodeId = v.episodeId;
+        getThemeTimes(currentEpisodeInfo.episodeId, v);
+      }
       intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
     };
   };
@@ -40,7 +43,9 @@
     return {
       player:         player
     , showName:       n.metadata.getMetadata().video.title
-    , seasonNum:      n.metadata.getActiveSeason().title.slice(7)
+    , seasonNum:      n.metadata.getActiveSeason() ? n.metadata.getActiveSeason().title.slice(7) : undefined
+    , seasonInfo:     n.metadata.getActiveSeason()
+    , type:           n.metadata.getMetadata().video.type
     , episodeName:    activeEpisode.title
     , episodeNum:     activeEpisode.seq
     , episodeId:      parseInt(activeEpisode.episodeId)
@@ -75,8 +80,9 @@
 
   // This just prints out a ton of useful info to the console. And it looks nice
   function logCurrentEpisode(v) {
+      var seasonNum = v.title.slice(7)
       console.log(v.showName);
-      console.log("Season "+v.seasonNum+": Ep. "+v.episodeNum+" \""+v.episodeName+"\"");
+      console.log("Season "+seasonNum+": Ep. "+v.episodeNum+" \""+v.episodeName+"\"");
       console.log("Theme Start: "+currentEpisodeInfo.themeStart);
       console.log("Theme End:   "+currentEpisodeInfo.themeEnd);
       console.log("--------------------");
@@ -131,7 +137,7 @@
     $submitPopup = $overlay.children('div.nts-submit-popup')
 
     // If the episode is unknown, enable submit mode divs
-    if (currentEpisodeInfo.themeStart === undefined && currentEpisodeInfo.themeEnd === undefined) {
+    if (currentEpisodeInfo.type === "show" && currentEpisodeInfo.themeStart === undefined && currentEpisodeInfo.themeEnd === undefined) {
       $overlay.children('span').on('mouseenter', function handlerIn(){
         $submitPopup.fadeIn(200);
       });
