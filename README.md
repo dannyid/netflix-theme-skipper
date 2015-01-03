@@ -1,6 +1,6 @@
 ### Netflix Theme Skipper
 
-This Chrome extension that uses crowd-sourced data to skip the opening credits of TV shows on Netflix.
+This is a Chrome extension that uses crowd-sourced data to skip the opening credits of TV shows on Netflix.
 
 Server is here: (https://github.com/dannyid/netflix-theme-skipper-server)
 
