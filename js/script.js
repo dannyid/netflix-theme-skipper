@@ -5,7 +5,7 @@
     , $overlay
     , sm;
 
-  var BASE_URL = "http://localhost:3000";
+  var BASE_URL = "https://netflix-theme-skipper-server.herokuapp.com";
   
   var intervalCheckAllTheThings = setInterval(checkAllTheThings, 100);
   var intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
