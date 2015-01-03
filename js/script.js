@@ -1,11 +1,11 @@
   var $ = jQuery
     , n = netflix.cadmium
-    , currentEpisodeInfo = {episodeId: 0, themeStart: undefined, themeEnd: undefined, type: undefined}
+    , currentEpisodeInfo = {episodeId: 0, themeStart: undefined, themeEnd: undefined, realThemeEnd: undefined, type: undefined}
     , $ntsScrubber
     , $overlay
     , sm;
 
-  var BASE_URL = "https://netflix-theme-skipper-server.herokuapp.com";
+  var BASE_URL = "http://nts.dannyid.com";
   
   var intervalCheckAllTheThings = setInterval(checkAllTheThings, 100);
   var intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
@@ -16,9 +16,17 @@
   // and compares those to information received from the database 
   function checkAllTheThings() {
     var v = getVideoData();
+    var currentVolume;
+
+    // Netflix only seeks to multiples of ~4sec so I find the difference between the real themeEnd and the place seek() will land
+    // to mute the audio until the REAL themeEnd time, so prevent jar
+    var difference = currentEpisodeInfo.realThemeEnd - currentEpisodeInfo.themeEnd;
 
     if (currentlyInTheme(v) === true) {
+      currentVolume = v.player.getVolume();
+      v.player.setVolume(0);
       v.player.seek(currentEpisodeInfo.themeEnd);
+      volumeOn(v.player.setVolume, difference, currentVolume);
     };
 
     // If the episode ID has changed, it means a new episode has been put on but the page hasn't been reloaded
@@ -33,6 +41,12 @@
       }
       intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
     };
+  };
+
+  function volumeOn(setVolumeFn, waitTime, originalVolume) {
+    setTimeout(function() {
+      setVolumeFn(originalVolume);
+    }, waitTime)
   };
 
   // This function gets maaaad stuff from the "netflix" object
@@ -62,12 +76,14 @@
       if (res[0] !== undefined) { 
         console.log("\n* * * Episode "+v.episodeId+" found! * * *");
         currentEpisodeInfo.themeStart = res[0].themeStart;
+        currentEpisodeInfo.realThemeEnd = res[0].themeEnd;
         currentEpisodeInfo.themeEnd = Math.floor(res[0].themeEnd / 4004) * 4004; //Netflix will only seek to multiples of 4004 (shrug)
         logCurrentEpisode(v); 
       } else {
         console.log("* * * Episode "+v.episodeId+" NOT found :( * * *");
         currentEpisodeInfo.themeStart = undefined;
         currentEpisodeInfo.themeEnd = undefined;
+        currentEpisodeInfo.realThemeEnd = undefined;
         logCurrentEpisode(v); 
       }
     })
@@ -81,8 +97,9 @@
       var seasonNum = v.seasonInfo.title.slice(7);
       console.log(v.series.title);
       console.log("Season "+seasonNum+": Ep. "+v.episodeNum+" \""+v.episodeName+"\"");
-      console.log("Theme Start: "+currentEpisodeInfo.themeStart);
-      console.log("Theme End:   "+currentEpisodeInfo.themeEnd);
+      console.log("Theme Start:    "+currentEpisodeInfo.themeStart);
+      console.log("Theme End:      "+currentEpisodeInfo.themeEnd);
+      console.log("Real Theme End: "+currentEpisodeInfo.realThemeEnd);
       console.log("--------------------");
   };
 
@@ -216,7 +233,8 @@
     function leave() { 
       clearInterval(intervalLockThemeToTime);
       currentEpisodeInfo.themeStart = parseInt(submitTimes.themeStart);
-      currentEpisodeInfo.themeEnd = parseInt(submitTimes.themeEnd);
+      currentEpisodeInfo.realThemeEnd = parseInt(submitTimes.themeEnd);
+      currentEpisodeInfo.themeEnd = Math.floor(parseInt(submitTimes.themeEnd) / 4004) * 4004;
       $scrubberHandle.removeClass('nts-submit-mode'); 
       $scrubberTheme.removeClass('nts-submit-mode');
       $submitPopup.removeClass('nts-submit-mode');
@@ -236,7 +254,7 @@
         };
       } else if (whichEnd === "end") {
       //console.log("end")
-        submitTimes.themeEnd = Math.floor(v.currentTime / 4004) * 4004;
+        submitTimes.themeEnd = v.currentTime;
         $scrubberTheme.css("width", (((submitTimes.themeEnd - submitTimes.themeStart) / v.duration) * 100)+"%");
       };
     };
