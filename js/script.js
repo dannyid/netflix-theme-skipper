@@ -1,5 +1,6 @@
   var $ = jQuery
     , n = netflix.cadmium
+    , v
     , currentEpisodeInfo = {episodeId: 0, themeStart: undefined, themeEnd: undefined, realThemeEnd: undefined, type: undefined}
     , $ntsScrubber
     , $overlay
@@ -15,8 +16,11 @@
   //  b) currentTime in the episode
   // and compares those to information received from the database 
   function checkAllTheThings() {
-    var v = getVideoData();
     var currentVolume;
+    
+    // This function runs every 100ms and the first thing it does is gathers and spits out a bunch of useful info about the currently playing title
+    // This v object is global and can be accessed by all the functions
+    v = getVideoData();
 
     // Netflix only seeks to multiples of ~4sec so I find the difference between the real themeEnd and the place seek() will land
     // to mute the audio until the REAL themeEnd time, so prevent jar
@@ -44,9 +48,11 @@
   };
 
   function volumeOn(setVolumeFn, waitTime, originalVolume) {
+    var setVolume = setVolumeFn;
+
     setTimeout(function() {
-      setVolumeFn(originalVolume);
-    }, waitTime)
+      setVolume(originalVolume);
+    }, waitTime);
   };
 
   // This function gets maaaad stuff from the "netflix" object
@@ -170,7 +176,6 @@
 
   // This injects the darkened scrubber area that highlights where the theme is
   function injectScrubber($netflixScrubber, themeStart, themeEnd) {
-    var v = getVideoData();
     var startPercent = themeStart / v.duration * 100;
     var durationPercent = (themeEnd - themeStart) / v.duration * 100;
 
@@ -241,8 +246,6 @@
     };
 
     function lockThemeToTime() {
-      var v = getVideoData();
-  
       if (whichEnd === "start") {
       //console.log("start")
         submitTimes.themeStart = v.currentTime;
