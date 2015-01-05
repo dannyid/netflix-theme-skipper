@@ -1,10 +1,18 @@
+//(function() {
   var $ = jQuery
     , n = netflix.cadmium
     , v
-    , currentEpisodeInfo = {episodeId: 0, themeStart: undefined, themeEnd: undefined, realThemeEnd: undefined, type: undefined}
     , $ntsScrubber
     , $overlay
     , sm;
+
+  var currentEpisodeInfo = {
+    episodeId: 0, 
+    themeStart: undefined, 
+    themeEnd: undefined, 
+    realThemeEnd: undefined, 
+    type: undefined
+  };
 
   var BASE_URL = "http://nts.dannyid.com";
   
@@ -26,32 +34,39 @@
     // to mute the audio until the REAL themeEnd time, so prevent jar
     var difference = currentEpisodeInfo.realThemeEnd - currentEpisodeInfo.themeEnd;
 
-    if (currentlyInTheme(v) === true) {
+    if (currentlyInTheme() === true) {
       currentVolume = v.player.getVolume();
       v.player.setVolume(0);
       v.player.seek(currentEpisodeInfo.themeEnd);
-      volumeOn(v.player.setVolume, difference, currentVolume);
+      volumeOn(difference, currentVolume);
+      console.log("after seek");
     };
 
     // If the episode ID has changed, it means a new episode has been put on but the page hasn't been reloaded
     // Therefore we must get new episode info and re-inject overlays (because Netflix reinstantiates player)
     if (v.episodeId !== currentEpisodeInfo.episodeId) {
-      currentEpisodeInfo.type = v.series.type;
       currentEpisodeInfo.themeStart = undefined;
       currentEpisodeInfo.themeEnd = undefined;
+      currentEpisodeInfo.type =         v.series.type;
       if (currentEpisodeInfo.type === "show") {
-        currentEpisodeInfo.episodeId = v.episodeId;
+        currentEpisodeInfo.seriesTitle =  v.series.title;
+        currentEpisodeInfo.seriesId =     v.series.id;
+        currentEpisodeInfo.seasonId =     v.seasonInfo.id;
+        currentEpisodeInfo.seasonNum =    v.seasonInfo.seq;
+        currentEpisodeInfo.seasonYear =   v.seasonInfo.year;
+        currentEpisodeInfo.episodeId =    v.episodeId;
+        currentEpisodeInfo.episodeTitle = v.episodeTitle;
         getThemeTimes(currentEpisodeInfo.episodeId, v);
       }
       intervalCheckIfPlayerLoaded = setInterval(checkIfPlayerLoaded, 500);
     };
   };
 
-  function volumeOn(setVolumeFn, waitTime, originalVolume) {
-    var setVolume = setVolumeFn;
-
+  function volumeOn(waitTime, originalVolume) {
+      console.log("outside timeout")
     setTimeout(function() {
-      setVolume(originalVolume);
+      v.player.setVolume(originalVolume);
+      console.log("inside timeout")
     }, waitTime);
   };
 
@@ -64,7 +79,7 @@
       player:         player
     , seasonInfo:     n.metadata.getActiveSeason()
     , series:         n.metadata.getMetadata().video
-    , episodeName:    activeEpisode.title
+    , episodeTitle:    activeEpisode.title
     , episodeNum:     activeEpisode.seq
     , episodeId:      parseInt(activeEpisode.episodeId)
     , isFullscreen:   n.fullscreen.isFullscreen()
@@ -84,13 +99,13 @@
         currentEpisodeInfo.themeStart = res[0].themeStart;
         currentEpisodeInfo.realThemeEnd = res[0].themeEnd;
         currentEpisodeInfo.themeEnd = Math.floor(res[0].themeEnd / 4004) * 4004; //Netflix will only seek to multiples of 4004 (shrug)
-        logCurrentEpisode(v); 
+        logCurrentEpisode(); 
       } else {
         console.log("* * * Episode "+v.episodeId+" NOT found :( * * *");
         currentEpisodeInfo.themeStart = undefined;
         currentEpisodeInfo.themeEnd = undefined;
         currentEpisodeInfo.realThemeEnd = undefined;
-        logCurrentEpisode(v); 
+        logCurrentEpisode(); 
       }
     })
     .error(function() {
@@ -99,10 +114,9 @@
   };
 
   // This just prints out a ton of useful info to the console. And it looks nice
-  function logCurrentEpisode(v) {
-      var seasonNum = v.seasonInfo.title.slice(7);
+  function logCurrentEpisode() {
       console.log(v.series.title);
-      console.log("Season "+seasonNum+": Ep. "+v.episodeNum+" \""+v.episodeName+"\"");
+      console.log("Season "+v.seasonInfo.seq+": Ep. "+v.episodeNum+" \""+v.episodeTitle+"\"");
       console.log("Theme Start:    "+currentEpisodeInfo.themeStart);
       console.log("Theme End:      "+currentEpisodeInfo.themeEnd);
       console.log("Real Theme End: "+currentEpisodeInfo.realThemeEnd);
@@ -110,20 +124,20 @@
   };
 
   // Comparing current time in episode to start and end times received from the database. Returns true / false
-  function currentlyInTheme(v) {
+  function currentlyInTheme() {
     if (v.currentTime > currentEpisodeInfo.themeEnd) {
-      //console.log("Theme has ended. Watching happyily again."); 
+      // Theme has ended
       return false;
     } 
     else if (v.currentTime < currentEpisodeInfo.themeStart) {
-      //console.log("Theme hasn't started yet.");  
+      // Theme hasn't started yet
       return false;
     } 
     else if (v.currentTime >= currentEpisodeInfo.themeStart && v.currentTime < currentEpisodeInfo.themeEnd) {
       console.log("Taken to theme end:");
       return true;
-    } else if (currentEpisodeInfo.themeStart >= 0 || currentEpisodeInfo.themeEnd >= 0) {
-      //console.log('unknown episode'); 
+    } else if (currentEpisodeInfo.themeStart === undefined || currentEpisodeInfo.themeEnd === undefined) {
+      // Unknown episode
       return false;
     };
   };
@@ -273,13 +287,18 @@
 
     // Submit theme start and end time information to database
     function submit() {
-      // options is the currentEpisodeInfo object
       $.ajax({ 
         type: "POST",
         url: BASE_URL+"/"+currentEpisodeInfo.episodeId,
         data: {
-          themeStart: parseInt(submitTimes.themeStart),
-          themeEnd: parseInt(submitTimes.themeEnd)
+          seriesTitle:  currentEpisodeInfo.seriesTitle,
+          seriesId:     currentEpisodeInfo.seriesId,
+          seasonNum:    currentEpisodeInfo.seasonNum,
+          seasonId:     currentEpisodeInfo.seasonId,
+          seasonYear:   currentEpisodeInfo.seasonYear,
+          episodeTitle: currentEpisodeInfo.episodeTitle,
+          themeStart:   parseInt(submitTimes.themeStart),
+          themeEnd:     parseInt(submitTimes.themeEnd)
         }
       })
       .done(function(res) {
@@ -315,4 +334,4 @@
       return true;
     };  
   };
-
+//})();
